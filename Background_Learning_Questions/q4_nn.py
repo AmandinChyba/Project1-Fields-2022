@@ -5,6 +5,7 @@ import jax.numpy as np
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+import numpy
 
 def f(x):
     '''Function we want to train our ANN for'''
@@ -73,18 +74,15 @@ def forwardPass(params, x):
     return values[0][0]
     
 
-def loss(pred, actual):
+def lossFunction(pred, actual):
     '''Calculate the residual with a loss function'''
     return np.power(pred-actual, 2)
 
 def predict(params, x, y):
     '''Apply the network to the input data and compute the loss'''
-    # scuffed batching
-    totalRes = []
-    for i in range(len(x)):
-        totalRes.append(loss(forwardPass(params, x[i]), y[i]))
+    thing = forwardPass(params, x)
+    return lossFunction(forwardPass(params, x), y)
     
-    return np.mean(np.array(totalRes))
     #pred = forwardPass(W, b, x)
     #res = loss(pred, y)
     #return res
@@ -109,42 +107,46 @@ layers = np.array([50,10,1])
 params = initializeParam(layers)
 
 # train the ANN
-lr = 0.001
-batchSize = 1
-epochs = 90000
+lr = 0.01
+epochs = 50000
 opt_init, opt_update, get_params = jax_opt.adam(lr)
 opt_state = opt_init(params)
-for i in range(0, len(xTrain), batchSize):
+#loss = [0]*epochs
+loss = numpy.empty(shape=epochs)
+for i in range(epochs):
     # forward propagate
-    #W_grads, b_grads = jax.grad(predict, (0,1))(W, b, np.array(xTrain[i:i+batchSize]), np.array(yTrain[i:i+batchSize]))
-    W_grads = jax.grad(predict, 0)(get_params(opt_state), np.array(xTrain[i:i+batchSize]), np.array(yTrain[i:i+batchSize]))
-    opt_state = opt_update(0, W_grads, opt_state)
-    
-    # backward propagate
-    #backwardPass(W_grads, b_grads, W, b, lr)
+    grads = jax.grad(predict, 0)(get_params(opt_state), xTrain[i], yTrain[i])
     
     # record loss
-    if (i % 1000 == 0):
+    loss[i] = predict(get_params(opt_state), xTrain[i], yTrain[i])
+    if (i % 1000 == 0 and i != 0):
         #print('loss: ', predict(W, b, np.array(xTrain[i]), np.array(yTrain[i])))
-        print('guess: ' + str(forwardPass(get_params(opt_state), np.array(0))))
+        #print('guess for x=0: ' + str(forwardPass(get_params(opt_state), np.array(0))))
+        print(i, 'epoch loss: ', loss[i-1000:i].mean())
     
-    # stopping point
-    if (i==epochs):
-        break
+    # backwards propagate
+    opt_state = opt_update(0, grads, opt_state)
 
 # test the ANN
+x = np.linspace(start=-1.0, stop=1.0, num=100)
+y = f(x)
 yPred = []
-xPred = []
-for i in range(len(xTrain)):
-    if (i>epochs and i < epochs+100):
-        yPred.append(forwardPass(get_params(opt_state), xTrain[i]))
-        xPred.append(xTrain[i])
+for i in range(len(x)):
+    yPred.append(forwardPass(get_params(opt_state), x[i]))
 
 # plot the results
-plt.scatter(xTrain, yTrain)
-plt.scatter(xPred, yPred)
-plt.show()
+#plt.title('ANN vs actual function')
+#plt.xlabel('x')
+#plt.ylabel('f')
+#plt.plot(x, y)
+#plt.plot(x, yPred)
+#plt.show()
 
+plt.title('loss per epochs')
+plt.xlabel('epochs')
+plt.ylabel('loss')
+plt.plot(numpy.arange(epochs), loss)
+plt.show()
 
 
 

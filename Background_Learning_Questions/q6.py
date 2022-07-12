@@ -2,6 +2,7 @@ import jax.numpy as np
 import jax.random as random
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
+import numpy
 
 K = 30
 h = 2/(K+1)
@@ -18,14 +19,19 @@ def jac(y):
     j = np.diag(y*2*h*h + h*h - 2)
     j += np.diag(np.ones(K-1), k=1)
     j += np.diag(np.ones(K-1), k=-1)
+
+    print('condition number: ', numpy.linalg.cond(j))
     return j
 
 x = -1 + np.arange(K+2)*h
 y0 = -(x+1)*(x-1)
 y02 = y0[1:-1]
-y = opt.fsolve(func, y02, fprime=jac)
-print('solution: ',  y)
-print('closeness: ',  func(y))
+infodict = opt.fsolve(func, y02, fprime=jac, full_output=True)
+y = infodict[0]
+# estimated jacobian condition number
+print(numpy.linalg.cond(infodict[1]['fjac']))
+#print('solution: ',  y)
+#print('closeness: ',  func(y))
 
 np.append(y, 0)
 np.insert(y, 0, 0)
