@@ -6,7 +6,7 @@ import jax.random as random
 import jax
 import scipy.optimize as opt
 
-K = 30
+K = 100
 h = 2/(K-1)
 x = -1 + np.arange(K)*h
 
@@ -18,7 +18,7 @@ def func(y):
     for k in range(K):
     
         # calculate green's function
-        G1 = (x[k]-1)*(x[0:k+1]-1)/2
+        G1 = (x[k]-1)*(x[0:k+1]+1)/2
         G2 = (x[k]+1)*(x[k:K]-1)/2
         #G = np.empty(K+1)
         #G[0:k+1] = np.multiply(x[k]-1, x-1)/2
@@ -36,13 +36,27 @@ def func(y):
         integral2 = np.multiply(h/2, np.sum(2*f2[1:-1]) + f2[0] + f2[len(f2)-1])
         
         yEqn[k] = integral1 + integral2
+        #yEqn[k] = (np.power(x[k],2)-1)/2 - integral1 - integral2
 
     yEqn = (np.power(x,2) - 1)/2 - yEqn
     return yEqn
+'''
+def jac(y):
+    j = np.diag(y*2*h*h + h*h - 2)
+    j += np.diag(np.ones(K-1), k=1)
+    j += np.diag(np.ones(K-1), k=-1)
 
-y0 = np.full(shape=K, fill_value=1)
-y = opt.fsolve(func, y0, full_output=False)
+    print('condition number: ', np.linalg.cond(j))
+    return j
+'''
 
+y0 = np.full(K,-1)
+#y0 = (x+1)*(x-1)
+infodict = opt.fsolve(func, y0, full_output=True)
+#infodict = opt.fsolve(func, y0, fprime=jac, full_output=True)
+y = infodict[0]
+
+#plt.plot(np.arange(len(y)), y)
 plt.plot(np.arange(len(y)), y)
 plt.show()
 
