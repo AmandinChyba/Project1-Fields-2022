@@ -4,7 +4,7 @@ import scipy.optimize as opt
 import matplotlib.pyplot as plt
 import numpy
 
-K = 30
+K = 40
 h = 2/(K+1)
 
 def func(y):
@@ -29,7 +29,7 @@ def jac(y):
     return j
 
 x = -1 + np.arange(K+2)*h
-y0 = numpy.full(K+2, 1)
+y0 = numpy.full(K+2, -1)
 #y0 = -(x+1)*(x-1)
 y02 = y0[1:-1]
 infodict = opt.fsolve(func, y02, fprime=jac, full_output=True)
