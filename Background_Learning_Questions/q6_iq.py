@@ -6,7 +6,7 @@ import jax.random as random
 import jax
 import scipy.optimize as opt
 
-K = 20
+K = 30
 h = 2/(K-1)
 x = -1 + np.arange(K)*h
 
@@ -16,47 +16,31 @@ def func(y):
 
     # for all equations y_k
     for k in range(K):
-        integral1 = computeIntegral1(x,y,k,K)
-        integral2 = computeIntegral2(x,y,k,K)
+    
+        # calculate green's function
+        G1 = (x[k]-1)*(x[0:k+1]-1)/2
+        G2 = (x[k]+1)*(x[k:K]-1)/2
+        #G = np.empty(K+1)
+        #G[0:k+1] = np.multiply(x[k]-1, x-1)/2
+        #G[k+1:K+1] = np.multiply(x[k]+1, x-1)/2
+        
+        # calculate the other part of the integrand
+        yPart = y + np.power(y, 2)
+        
+        # calculate the entire integrand
+        f1 = np.multiply(G1, yPart[0:k+1])
+        f2 = np.multiply(G2, yPart[k:K])
+        
+        # compute both integrals using trapezoid rule
+        integral1 = np.multiply(h/2, np.sum(2*f1[1:-1]) + f1[0] + f1[len(f1)-1])
+        integral2 = np.multiply(h/2, np.sum(2*f2[1:-1]) + f2[0] + f2[len(f2)-1])
         
         yEqn[k] = integral1 + integral2
 
-    yEqn = (np.multiply(x,x) - 1)/2 - yEqn
-
+    yEqn = (np.power(x,2) - 1)/2 - yEqn
     return yEqn
 
-def computeIntegral1(x, y, k, K):
-        xbound = k+1
-        G = (x[k]-1)*(x[0:xbound]-1)/2
-        yPart = y[0:xbound] + np.power(y[0:xbound], 2)
-        f = np.multiply(G, yPart)
-        
-        if (k > 0):
-            i = np.arange(1,xbound)
-            deltaX = x[i] - x[i-1]
-            deltaF = f[i] + f[i-1]
-
-            return np.sum(np.multiply(deltaX, deltaF)/2)
-        else:
-            return 0
- 
-def computeIntegral2(x, y, k, K):
-        xbound = k+1
-        G = (x[k]+1)*(x[xbound:K]-1)/2
-        yPart = y[xbound:K] + np.power(y[xbound:K], 2)
-        f = np.multiply(G, yPart)
-        #integral2 = (h/2)*(f2[0] + 2*np.sum(f2[1:K-2]) + f2[K-1]) 
-        
-        i = np.arange(xbound,K)
-        deltaX = x[i] - x[i-1]
-
-        i = np.arange(K-xbound)
-        deltaF = f[i] + f[i-1]
-
-        return np.sum(np.multiply(deltaX, deltaF)/2)
- 
-
-y0 = np.full(shape=K, fill_value=0)
+y0 = np.full(shape=K, fill_value=1)
 y = opt.fsolve(func, y0, full_output=False)
 
 plt.plot(np.arange(len(y)), y)
