@@ -8,11 +8,16 @@ K = 30
 h = 2/(K+1)
 
 def func(y):
-    eqns = [y[1] - 2*y[0] + y[0]*h*h + y[0]*y[0]*h*h - h*h]
+    eqns = numpy.empty(K)
+    eqns[0] = y[1] - 2*y[0] + y[0]*h*h + y[0]*y[0]*h*h - h*h
+    k = numpy.arange(1, K-1)
+    eqns[k] = y[k+1] - 2*y[k] + y[k-1] + y[k]*h*h + y[k]*y[k]*h*h - h*h
+    '''
     for k in range(1,K-1):
         eqn = y[k+1] - 2*y[k] + y[k-1] + y[k]*h*h + y[k]*y[k]*h*h - h*h
         eqns.append(eqn)
-    eqns.append(y[K-2] - 2*y[K-1] + y[K-1]*h*h + y[K-1]*y[K-1]*h*h - h*h)
+    '''
+    eqns[K-1] = y[K-2] - 2*y[K-1] + y[K-1]*h*h + y[K-1]*y[K-1]*h*h - h*h
     return eqns
 
 def jac(y):
