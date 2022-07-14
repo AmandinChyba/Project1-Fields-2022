@@ -12,10 +12,15 @@ def computeW(n, m, dt, dx):
     W = jnp.zeros(shape=(m,1))
     W = jnp.append(W, X, axis=1)
     W = jnp.cumsum(W, axis=1)
+    
+    #plt.plot(jnp.arange(0,len(W[0])*dt, step=dt), W[0])
+    #plt.xlabel("time")
+    #plt.ylabel("W(t)")
+    #plt.show()
 
     # part 2a
-    a = -50
-    b = 50
+    a = -20
+    b = 20
     
     rows, cols = jnp.where(jnp.logical_or(W >= b,W <= a))
 
@@ -34,16 +39,11 @@ def computeW(n, m, dt, dx):
     return result
 
 dt = 1
-dx = 1
+dx = 2
 totalSteps = 100000
-totalRuns = 1000
+totalRuns = 100
 
 result = computeW(totalSteps, totalRuns, dt, dx)
 print("approximation of expected value: " + str(result))
-
-#plt.plot(jnp.arange(0,len(W)*dt, step=dt), W)
-#plt.xlabel("time")
-#plt.ylabel("W(t)")
-#plt.show()
 
 
