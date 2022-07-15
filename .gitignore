@@ -1,3 +1,5 @@
+*.asv
+
 # ignore notebook files since they are changed when downloaded to the local machine
 *.ipynb
 
