@@ -11,8 +11,8 @@ y1 = 10
 epochs = 100
 for i in range(epochs):
     # update the middle point
-    xnew = x1 - x0
-    ynew = y1 - y0
+    xnew = (x1 - x0)/2
+    ynew = (y1 - y0)/2
 
     # 'boundary' is actually the signed distance function
     if boundary(xnew, ynew) > 0:
@@ -23,8 +23,8 @@ for i in range(epochs):
         y0 = xnew
 
 # the root is at this point
-xnew = x1 - x0
-ynew = y1 - y0
+xnew = (x1 - x0)/2
+ynew = (y1 - y0)/2
 
 
 
